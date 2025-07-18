@@ -1,0 +1,114 @@
+create database project;
+-- ALTER TABLE products ADD CONSTRAINT fk_name FOREIGN KEY (category_id)REFERENCES categories(category_id);
+use project;
+select * from brands;
+ select * from orders;
+ select * from products;
+ select * from order_items;
+ select * from stores;
+ select * from staffs;
+ select * from customers;
+ select * from stocks;
+select * from categories;
+-- .............................................
+-- Q1
+select product_name, list_price  from products where list_price = (select max(list_price) from products);
+select count(*) from customers;
+
+-- Q2
+select count(customer_id) from orders where order_status=3;
+
+-- Q3
+select count(store_id) from stores;
+
+-- Q4
+select quantity, list_price,discount,(list_price*quantity*(1-discount)) as total_price from order_items;
+
+-- Q5
+select os.store_id,sum(oi.list_price*oi.quantity*(1-oi.discount)) as revenue_price 
+from order_items as oi inner join orders os on oi.order_id=os.order_id group by os.store_id;
+-- not end
+-- Q6
+select ca.category_id,ca.category_name, sum(ord.list_price*ord.quantity)as sold from categories as ca join products as p 
+on ca.category_id=p.category_id join order_items as ord
+ on p.product_id=ord.product_id group by ca.category_id, ca.category_name ;
+-- Q7
+ select ca.category_name,od.order_status from categories as ca join products as pr on ca.category_id=pr.category_id  join order_items as oi 
+ on pr.product_id=oi.product_id join orders as od on oi.order_id=od.order_id where od.order_status=3;
+ 
+-- Q8
+select product_name, list_price  from products where list_price = (select min(list_price) from products); 
+-- Q9
+select concat(first_name,' ',last_name) as full_name from customers where customer_id=259; 
+
+-- Q10 
+select concat(cu.first_name,' ',cu.last_name) as full_name,pr.product_name,od.order_status,od.order_date from customers as cu join orders as od 
+on cu.customer_id=od.customer_id join order_items as oi on od.order_id=oi.order_id join products as pr 
+on oi.product_id=pr.product_id where  cu.customer_id=259;
+
+-- q11
+select concat(sf.first_name,' ',sf.last_name) as full_name,st.store_name from staffs as sf left join stores as st on st.store_id=sf.store_id 
+left join orders as od on sf.staff_id=od.staff_id  left join customers as cu on od.customer_id=cu.customer_id  where cu.customer_id=259;
+
+-- Q12
+select count(sf.staff_id),st.store_name,sf.manager_id from staffs as sf join stores as st on sf.store_id=st.store_id group by st.store_name,sf.manager_id;
+
+-- Q13
+SELECT bn.brand_name FROM products AS pr JOIN brands AS bn ON pr.brand_id = bn.brand_id
+WHERE pr.brand_id = (SELECT pr.brand_id FROM products AS pr JOIN order_items AS oi ON pr.product_id = oi.product_id
+    GROUP BY pr.brand_id ORDER BY SUM(oi.quantity * oi.list_price) DESC LIMIT 1);
+
+-- Q14
+select count(ca.category_name),st.store_name from categories as ca join products as pr
+ on ca.category_id=pr.category_id join order_items as oi
+on pr.product_id=oi.product_id join orders as od on oi.order_id=od.order_id join stores as st on od.store_id=st.store_id  group by st.store_name;
+
+-- Q15
+SELECT st.store_name FROM products AS pr JOIN brands AS bn ON pr.brand_id = bn.brand_id JOIN order_items AS oi
+ ON pr.product_id = oi.product_id join orders as od on oi.order_id=od.order_id join stores as st on od.store_id=st.store_id
+WHERE pr.brand_id = (SELECT pr.brand_id FROM products AS pr JOIN order_items AS oi ON pr.product_id = oi.product_id
+    GROUP BY pr.brand_id ORDER BY SUM(oi.quantity * oi.list_price) DESC LIMIT 1)GROUP BY st.store_name ORDER BY SUM(oi.quantity) DESC LIMIT 1;
+
+ -- Q16
+CREATE VIEW state_sales AS
+SELECT st.state,SUM(oi.quantity * oi.list_price) AS total_sales FROM stores AS st JOIN orders AS od ON st.store_id = od.store_id
+JOIN order_items AS oi ON od.order_id = oi.order_id GROUP BY st.state;
+ select state from state_sales where total_sales=(select MAX(total_sales) FROM state_sales);
+ 
+ -- Q17
+ select product_id, (discount * list_price) as 'discount_price' from order_items where product_id=259;
+ 
+ -- Q18
+select ca.category_name,pr.product_name,pr.model_year,bn.brand_name,oi.quantity,oi.list_price from categories as ca join products as pr 
+on ca.category_id=pr.category_id  join order_items as oi 
+ on pr.product_id=oi.product_id join brands as bn on pr.brand_id=bn.brand_id where pr.product_id=44;
+ 
+ -- Q19
+ select zip_code from stores where state="CA";
+ 
+--  Q20
+SELECT DISTINCT state FROM stores;
+
+-- Q21
+select count(pr.product_name) as bikes_under_the_children from products as pr join categories as ca 
+on pr.category_id=ca.category_id where ca.category_name="Children Bicycles";
+-- Q21
+SELECT count(oi.quantity) AS total_bikes_sold FROM categories AS ca JOIN products AS pr ON ca.category_id = pr.category_id
+JOIN order_items AS oi ON pr.product_id = oi.product_id JOIN orders AS od ON oi.order_id = od.order_id WHERE ca.category_name = 'Children Bicycles'
+AND od.order_date >= DATE_SUB((select max(od.order_date) from orders), INTERVAL 8 MONTH);
+
+ -- Q22 
+ select shipped_date from orders where customer_id=523;
+ 
+ -- Q23
+ select count(*) from orders where order_status=1;
+ 
+ -- Q24
+  select ca.category_name,bn.brand_name from categories as ca join products as pr on ca.category_id=pr.category_id join brands as bn 
+  on pr.brand_id=bn.brand_id where pr.product_name="Electra white water 3i - 2018";
+  
+  
+  select count(customer_id) from customers;
+  
+  select sum(quantity) from order_items;
+  
